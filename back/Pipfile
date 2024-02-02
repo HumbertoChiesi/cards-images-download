@@ -9,6 +9,7 @@ pandas = "*"
 selenium = "*"
 chromedrivermanager = "*"
 pokemontcgsdk = "*"
+beautifulsoup4 = "*"
 
 [dev-packages]
 
