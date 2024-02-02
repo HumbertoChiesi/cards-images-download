@@ -7,6 +7,21 @@ class CardsInfo:
     """
     A class for managing and retrieving information about pokemon TCG cards using the pokemontcgsdk.
     """
+    @staticmethod
+    def _recursive_getattr(obj, prop):
+        """
+        Recursively retrieves attributes from an object based on a dot-separated property string
+
+        :param obj: an object
+        :param prop: property of the object
+        :return: The value of the specified property or None if not found.
+        """
+        if '.' in prop:
+            first, rest = prop.split('.', 1)
+            return CardsInfo._recursive_getattr(getattr(obj, first), rest)
+        else:
+            return getattr(obj, prop, None)
+
 
     @staticmethod
     def _append_cards_to_df(cards: List[Card], df: pd.DataFrame, cards_properties: List[str]) -> pd.DataFrame:
@@ -19,14 +34,7 @@ class CardsInfo:
         :param cards_properties: list of properties of the pokemontcgsdk Card object
         :return: Dataframe of cards info
         """
-        data = {
-            prop: [
-                getattr(getattr(card, prop.split('.')[0], None), prop.split('.')[1], None) if '.' in prop else getattr(
-                    card, prop, None)
-                for card in cards
-            ]
-            for prop in cards_properties
-        }
+        data = {prop: [CardsInfo._recursive_getattr(card, prop) for card in cards] for prop in cards_properties}
         df_cards = pd.DataFrame(data)
         return pd.concat([df, df_cards], ignore_index=True)
 
