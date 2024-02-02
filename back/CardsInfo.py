@@ -43,8 +43,7 @@ class CardsInfo:
         return CardsInfo._append_cards_to_df(cards, df_all_collections_cards, cards_properties)
 
     @staticmethod
-    def get_collections(list_collections_id: List[str],
-                        cards_properties: List[str]) -> pd.DataFrame:
+    def get_collections(list_collections_id: List[str], cards_properties: List[str]) -> pd.DataFrame:
         """
         Get cards info (defined in the cards_properties param) from the pokemon TCG collections specified
         (list_collections_id)
