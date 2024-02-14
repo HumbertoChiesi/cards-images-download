@@ -17,7 +17,8 @@ class EbayScraper:
         :param query: The search query
         :return: The HTML content of the eBay search results page
         """
-        search_url = self.base_url + f"sch/i.html?_from=R40&_nkw={query.replace(' ', '+')}&_sacat=0"
+        search_url = self.base_url + f"sch/i.html?_from=R40&_nkw={query.replace(' ', '+')}&_sacat=0&_sop=15"
+        print(search_url)
         return requests.get(search_url).text
 
     def get_sale_images(self, qty: int, html_text: str) -> List[str]:

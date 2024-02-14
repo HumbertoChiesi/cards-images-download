@@ -1,8 +1,10 @@
-from CardsInfo import CardsInfo
-import pandas as pd
+from CardsImageDownloader import CardsImageDownloader
 
-if __name__ == "__main__":
-    df = CardsInfo.get_collections(['base1'], ['name', 'id', 'images.small'])
-    df.to_csv('./files/base_set_cards.csv', index=False)
 
-    print(df)
+def main():
+    aux = CardsImageDownloader()
+    aux.download_by_collection('ex8')
+
+
+if __name__ == '__main__':
+    main()
