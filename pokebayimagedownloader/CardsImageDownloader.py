@@ -8,11 +8,22 @@ from pokebayimagedownloader.EbayScraper import EbayScraper
 
 
 class CardsImageDownloader:
+    """
+       A class for downloading Pokemon trading card images from eBay.
+
+       Attributes:
+           saving_directory (str): The directory where the downloaded images will be saved.
+           ebay_scraper (EbayScraper): An instance of the EbayScraper class used for scraping eBay.
+           set_printed_total (str): The total number of printed cards in the set.
+           set_year_released (str): The year the set was released.
+           MAX_RELATED_SALES (int): The maximum number of related sales to consider.
+    """
     def __init__(self, saving_directory='./files/images'):
         self.base_directory = saving_directory
         self.ebay_scraper = EbayScraper()
         self.set_printed_total = None
         self.set_year_released = None
+        self.MAX_RELATED_SALES = 10
 
     def _build_query(self, card_name: str, card_id: str) -> str:
         card_number = card_id.split('-')[1]
@@ -25,7 +36,7 @@ class CardsImageDownloader:
         self.set_year_released = collection_info.releaseDate[0:4]
 
     def _get_ebay_info(self, query: str) -> List[dict]:
-        sales_info = self.ebay_scraper.get_sale_info(
+        sales_info = self.ebay_scraper.get_sales_info(
             self.ebay_scraper.search(query)
         )
 
@@ -39,7 +50,7 @@ class CardsImageDownloader:
             if card_name.lower() in card_sale['title'].lower() and f"{card_number}/{self.set_printed_total}" in card_sale['title'].lower():
                 related_sales.append(card_sale)
 
-        return related_sales[:(10 if (len(related_sales) > 10 >= 0) else len(related_sales))]
+        return related_sales[:(self.MAX_RELATED_SALES if (len(related_sales) > self.MAX_RELATED_SALES >= 0) else len(related_sales))]
 
     def download_card_images(self, card_name: str, card_id: str, ):
         ebay_sales = self._get_ebay_info(self._build_query(card_name, card_id))

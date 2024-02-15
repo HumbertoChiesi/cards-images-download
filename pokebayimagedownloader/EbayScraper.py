@@ -5,7 +5,7 @@ from dataclasses import dataclass, asdict
 
 
 @dataclass
-class PokeCardSale:
+class EbaySale:
     title: str
     image: str
 
@@ -31,11 +31,10 @@ class EbayScraper:
         resp = httpx.get(search_url, headers=self.headers)
         return HTMLParser(resp.text)
 
-    def get_sale_info(self, html_parser: HTMLParser) -> List[dict]:
+    def get_sales_info(self, html_parser: HTMLParser) -> List[dict]:
         """
-        Extract sale images from the eBay search results HTML.
+        Extract sale infos from the eBay search results HTML.
 
-        :param qty: The desired quantity of images.
         :param html_parser: The HTML content of the eBay search results page.
         :return: A list of sale dict.
         """
@@ -43,7 +42,7 @@ class EbayScraper:
         results = []
 
         for sale in card_sales:
-            new_card_sale = PokeCardSale(
+            new_card_sale = EbaySale(
                 title=sale.css_first("span[role='heading']").text(),
                 image=sale.css_first("img").attributes["src"]
             )
