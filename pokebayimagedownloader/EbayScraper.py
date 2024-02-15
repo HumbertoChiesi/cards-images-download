@@ -1,16 +1,25 @@
-from bs4 import BeautifulSoup
-import requests
 from typing import List
+import httpx
+from selectolax.parser import HTMLParser
+from dataclasses import dataclass, asdict
+
+
+@dataclass
+class PokeCardSale:
+    title: str
+    image: str
 
 
 class EbayScraper:
     """
-    A simple eBay scraper for searching and extracting sale images
+    A simple eBay scraper for searching and extracting sale images and titles
     """
+
     def __init__(self):
         self.base_url = "https://www.ebay.com/"
+        self.headers = {"Accept-Language": "en-US;q=0.8,en;q=0.7"}
 
-    def search(self, query: str) -> str:
+    def search(self, query: str) -> HTMLParser:
         """
         Perform a search on eBay and return the HTML content of the search results page
 
@@ -19,17 +28,25 @@ class EbayScraper:
         """
         search_url = self.base_url + f"sch/i.html?_from=R40&_nkw={query.replace(' ', '+')}&_sacat=0&_sop=15"
         print(search_url)
-        return requests.get(search_url).text
+        resp = httpx.get(search_url, headers=self.headers)
+        return HTMLParser(resp.text)
 
-    def get_sale_images(self, qty: int, html_text: str) -> List[str]:
+    def get_sale_info(self, html_parser: HTMLParser) -> List[dict]:
         """
         Extract sale images from the eBay search results HTML.
 
         :param qty: The desired quantity of images.
-        :param html_text: The HTML content of the eBay search results page.
-        :return: A list of sale image URLs.
+        :param html_parser: The HTML content of the eBay search results page.
+        :return: A list of sale dict.
         """
-        html_soup = BeautifulSoup(html_text, 'html.parser')
-        image_divs = html_soup.find_all('div', class_='s-item__image-wrapper image-treatment')
-        sale_images = [div.find('img')['src'] for div in image_divs]
-        return sale_images[1:(qty+1 if (len(sale_images) > qty >= 0) else len(sale_images))]
+        card_sales = html_parser.css("div.s-item__wrapper")
+        results = []
+
+        for sale in card_sales:
+            new_card_sale = PokeCardSale(
+                title=sale.css_first("span[role='heading']").text(),
+                image=sale.css_first("img").attributes["src"]
+            )
+            results.append(asdict(new_card_sale))
+
+        return results[1:]

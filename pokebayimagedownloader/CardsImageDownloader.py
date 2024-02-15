@@ -24,16 +24,27 @@ class CardsImageDownloader:
         self.set_printed_total = collection_info.printedTotal
         self.set_year_released = collection_info.releaseDate[0:4]
 
-    def _get_ebay_images(self, query: str) -> List[str]:
-        images_url = self.ebay_scraper.get_sale_images(
-            10,
+    def _get_ebay_info(self, query: str) -> List[dict]:
+        sales_info = self.ebay_scraper.get_sale_info(
             self.ebay_scraper.search(query)
         )
 
-        return images_url
+        return sales_info
+
+    def _remove_unrelated_sales(self, sales_list: List[dict], card_name: str, card_id: str) -> List[dict]:
+        card_number = card_id.split('-')[1]
+        related_sales = []
+
+        for card_sale in sales_list:
+            if card_name.lower() in card_sale['title'].lower() and f"{card_number}/{self.set_printed_total}" in card_sale['title'].lower():
+                related_sales.append(card_sale)
+
+        return related_sales[:(10 if (len(related_sales) > 10 >= 0) else len(related_sales))]
 
     def download_card_images(self, card_name: str, card_id: str, ):
-        images_url = self._get_ebay_images(self._build_query(card_name, card_id))
+        ebay_sales = self._get_ebay_info(self._build_query(card_name, card_id))
+
+        images_url = [sale['image'] for sale in self._remove_unrelated_sales(ebay_sales, card_name, card_id)]
 
         image_path = self.base_directory + f"/{card_id}"
         os.makedirs(image_path, exist_ok=True)
