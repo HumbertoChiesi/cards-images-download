@@ -17,7 +17,12 @@ class EbayScraper:
 
     def __init__(self):
         self.base_url = "https://www.ebay.com/"
-        self.headers = {"Accept-Language": "en-US;q=0.8,en;q=0.7"}
+        self.session = self._create_session()
+        
+    def _create_session(self) -> httpx.Client:
+        headers = {"Accept-Language": "en-US;q=0.8,en;q=0.7"}
+        s = httpx.Client(headers=headers)
+        return s
 
     def search(self, query: str) -> HTMLParser:
         """
@@ -28,7 +33,7 @@ class EbayScraper:
         """
         search_url = self.base_url + f"sch/i.html?_from=R40&_nkw={query.replace(' ', '+')}&_sacat=0&_sop=15"
         print(search_url)
-        resp = httpx.get(search_url, headers=self.headers)
+        resp = self.session.get(search_url)
         return HTMLParser(resp.text)
 
     def get_sales_info(self, html_parser: HTMLParser) -> List[dict]:
