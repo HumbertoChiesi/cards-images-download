@@ -18,6 +18,7 @@ class CardsImageDownloader:
            set_year_released (str): The year the set was released.
            MAX_RELATED_SALES (int): The maximum number of related sales to consider.
     """
+
     def __init__(self, saving_directory='./files/images'):
         self.base_directory = saving_directory
         self.ebay_scraper = EbayScraper()
@@ -30,10 +31,10 @@ class CardsImageDownloader:
         query = f"pokemon {urllib.parse.quote(card_name)} {card_number}/{self.set_printed_total} {self.set_year_released}"
         return query
 
-    def _get_collection_info(self, collection_id: str):
-        collection_info = Set.find(collection_id)
-        self.set_printed_total = collection_info.printedTotal
-        self.set_year_released = collection_info.releaseDate[0:4]
+    def _get_set_info(self, set_id: str):
+        set_info = Set.find(set_id)
+        self.set_printed_total = set_info.printedTotal
+        self.set_year_released = set_info.releaseDate[0:4]
 
     def _get_ebay_info(self, query: str) -> List[dict]:
         sales_info = self.ebay_scraper.get_sales_info(
@@ -53,10 +54,12 @@ class CardsImageDownloader:
         related_sales = []
 
         for card_sale in sales_list:
-            if card_name.lower() in card_sale['title'].lower() and f"{card_number}/{self.set_printed_total}" in card_sale['title'].lower():
+            if card_name.lower() in card_sale['title'].lower() and f"{card_number}/{self.set_printed_total}" in \
+                    card_sale['title'].lower():
                 related_sales.append(card_sale)
 
-        return related_sales[:(self.MAX_RELATED_SALES if (len(related_sales) > self.MAX_RELATED_SALES >= 0) else len(related_sales))]
+        return related_sales[
+               :(self.MAX_RELATED_SALES if (len(related_sales) > self.MAX_RELATED_SALES >= 0) else len(related_sales))]
 
     def download_card_images(self, card_name: str, card_id: str):
         images_url = self._get_sales_images(card_name, card_id)
@@ -70,10 +73,10 @@ class CardsImageDownloader:
             with open(file_path, 'wb') as file:
                 file.write(response.content)
 
-    def download_by_collection(self, collection_id: str):
-        self._get_collection_info(collection_id)
+    def download_by_set(self, set_id: str):
+        self._get_set_info(set_id)
 
-        cards_df = CardsInfo.get_by_collections([collection_id], ['name', 'id'])
+        cards_df = CardsInfo.get_by_sets([set_id], ['name', 'id'])
 
         for index, row in cards_df.iterrows():
             self.download_card_images(row['name'], row['id'])
