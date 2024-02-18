@@ -14,9 +14,9 @@ class EbayScraper:
     """
     A simple eBay scraper for searching and extracting sale images and titles
     """
+    base_url = "https://www.ebay.com/"
 
     def __init__(self):
-        self.base_url = "https://www.ebay.com/"
         self.session = self._create_session()
         
     def _create_session(self) -> httpx.Client:
