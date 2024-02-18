@@ -25,10 +25,10 @@ class CardsImageDownloader:
            MAX_RELATED_SALES (int): The maximum number of related sales to consider.
     """
 
-    def __init__(self, saving_directory='./files/images'):
+    def __init__(self, saving_directory: str = './files/images', img_qty: int = 10):
         self.base_directory = saving_directory
         self.ebay_scraper = EbayScraper()
-        self.MAX_RELATED_SALES = 10
+        self.MAX_RELATED_SALES = img_qty
 
     def _build_query(self, card_name: str, card_id: str, poke_set: PokeSet) -> str:
         card_number = card_id.split('-')[1]
@@ -53,11 +53,12 @@ class CardsImageDownloader:
 
     def _get_sales_images(self, card_name: str, card_id: str, poke_set: PokeSet) -> List[str]:
         ebay_sales = self._get_ebay_info(self._build_query(card_name, card_id, poke_set))
-        images_url = [sale['image'] for sale in self._remove_unrelated_sales(ebay_sales, card_name, card_id)]
+        images_url = [sale['image'] for sale in self._remove_unrelated_sales(ebay_sales, card_name, card_id, poke_set)]
 
         return images_url
 
-    def _remove_unrelated_sales(self, sales_list: List[dict], card_name: str, card_id: str, poke_set: PokeSet) -> List[dict]:
+    def _remove_unrelated_sales(self, sales_list: List[dict], card_name: str, card_id: str, poke_set: PokeSet) -> List[
+        dict]:
         card_number = card_id.split('-')[1]
         related_sales = []
 
