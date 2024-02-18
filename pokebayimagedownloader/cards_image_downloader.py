@@ -42,6 +42,12 @@ class CardsImageDownloader:
 
         return sales_info
 
+    def _get_sales_images(self, card_name: str, card_id: str) -> List[str]:
+        ebay_sales = self._get_ebay_info(self._build_query(card_name, card_id))
+        images_url = [sale['image'] for sale in self._remove_unrelated_sales(ebay_sales, card_name, card_id)]
+
+        return images_url
+
     def _remove_unrelated_sales(self, sales_list: List[dict], card_name: str, card_id: str) -> List[dict]:
         card_number = card_id.split('-')[1]
         related_sales = []
@@ -52,10 +58,8 @@ class CardsImageDownloader:
 
         return related_sales[:(self.MAX_RELATED_SALES if (len(related_sales) > self.MAX_RELATED_SALES >= 0) else len(related_sales))]
 
-    def download_card_images(self, card_name: str, card_id: str, ):
-        ebay_sales = self._get_ebay_info(self._build_query(card_name, card_id))
-
-        images_url = [sale['image'] for sale in self._remove_unrelated_sales(ebay_sales, card_name, card_id)]
+    def download_card_images(self, card_name: str, card_id: str):
+        images_url = self._get_sales_images(card_name, card_id)
 
         image_path = self.base_directory + f"/{card_id}"
         os.makedirs(image_path, exist_ok=True)
