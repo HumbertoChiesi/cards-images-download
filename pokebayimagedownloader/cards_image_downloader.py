@@ -20,9 +20,9 @@ class CardsImageDownloader:
        A class for downloading Pokemon trading card images from eBay.
 
        Attributes:
-           saving_directory (str): The directory where the downloaded images will be saved.
-           ebay_scraper (EbayScraper): An instance of the EbayScraper class used for scraping eBay.
-           MAX_RELATED_SALES (int): The maximum number of related sales to consider.
+           saving_directory (str): Directory where the downloaded images will be saved.
+           ebay_scraper (EbayScraper): Instance of the EbayScraper class used for scraping eBay.
+           MAX_RELATED_SALES (int): The maximum number of related sales to download.
     """
 
     def __init__(self, saving_directory: str = './files/images', img_qty: int = 10):
