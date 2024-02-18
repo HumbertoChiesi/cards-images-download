@@ -1,4 +1,4 @@
-from pokebayimagedownloader.CardsImageDownloader import CardsImageDownloader
+from pokebayimagedownloader.cards_image_downloader import CardsImageDownloader
 
 
 def main():

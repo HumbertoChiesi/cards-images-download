@@ -3,8 +3,8 @@ from typing import List
 import requests
 import urllib.parse
 from pokemontcgsdk import Set
-from pokebayimagedownloader.CardsInfo import CardsInfo
-from pokebayimagedownloader.EbayScraper import EbayScraper
+from pokebayimagedownloader.cards_info import CardsInfo
+from pokebayimagedownloader.ebay_scraper import EbayScraper
 
 
 class CardsImageDownloader:
