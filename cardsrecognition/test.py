@@ -5,7 +5,7 @@ from tensorflow.keras.preprocessing import image
 
 model = load_model('pokemon_card_recognition_model.h5')
 
-image_path = 'C:/Users/user/Desktop/pkm-site/files/images/base1-46/base1-46_37.jpg'
+image_path = 'C:/Users/user/Downloads/image.webp'
 
 img = image.load_img(image_path, target_size=(224, 224))
 img_array = image.img_to_array(img)
