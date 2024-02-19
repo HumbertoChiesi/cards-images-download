@@ -6,7 +6,7 @@ import {
 import PkmTcgService from "../../services/PkmTcgService";
 import Card from "./PkmCard";
 import {styled} from "@mui/system";
-import RegisterLink from "./RegisterLink";
+import axios from 'axios';
 
 const ButtonStyled = styled(Button)({
     backgroundColor: '#666bc4',
@@ -32,6 +32,7 @@ const LinkStyled = styled(Link)({
 const LoginPage = () => {
     const [Cards, setCards] = useState(['']);
     const [selectedImage, setSelectedImage] = useState(null);
+    const [prediction, setPrediction] = useState(null);
 
     useEffect(() => {
         getCards()
@@ -58,11 +59,24 @@ const LoginPage = () => {
         )
     }
 
-    const handleImageUpload = (event) => {
+    const handleImageUpload = async (event) => {
         const file = event.target.files[0];
         const reader = new FileReader();
-        reader.onloadend = () => {
+        reader.onloadend = async () => {
             setSelectedImage(reader.result);
+            // Convert the base64 data to a FormData object
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await axios.post('http://localhost:8000/predict/', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                setPrediction(response.data.prediction);
+            } catch (error) {
+                console.error('Error:', error);
+            }
         };
         if (file) {
             reader.readAsDataURL(file);
@@ -101,6 +115,7 @@ const LoginPage = () => {
                         Upload Picture
                     </ButtonStyled>
                 </label>
+                {prediction && <p>Prediction: {prediction}</p>}
             </div>
             {
                 Cards.map((card, index) => (
