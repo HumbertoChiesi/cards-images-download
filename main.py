@@ -2,7 +2,7 @@ from pokebayimagedownloader.cards_image_downloader import CardsImageDownloader
 
 
 def main():
-    aux = CardsImageDownloader()
+    aux = CardsImageDownloader(img_qty=50)
     aux.download_by_set('base1')
 
 
