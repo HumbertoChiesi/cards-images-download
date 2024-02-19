@@ -23,37 +23,6 @@ const ButtonStyled = styled(Button)({
     },
 })
 
-const TextFieldStyled = styled(TextField)({
-    mx: 'auto',
-    borderRadius:30,
-    backgroundColor: '#FFFFFF',
-    display: 'block',
-    width: 330,
-    height: '60px',
-    paddingTop: 0,
-    paddingBottom: 10,
-    marginTop: '36px',
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    '& label.Mui-focused': {
-        color: 'black',
-    },
-    '& .MuiOutlinedInput-root': {
-        '& fieldset': {
-            border: 0,
-            borderRadius: 30,
-        },
-        '&:hover fieldset': {
-            border: 0,
-            borderRadius: 30
-        },
-        '&.Mui-focused fieldset': {
-            border: 0,
-            borderRadius: 30
-        },
-    }
-})
-
 const LinkStyled = styled(Link)({
     display: 'block',
     textAlign: 'center',
@@ -62,6 +31,7 @@ const LinkStyled = styled(Link)({
 
 const LoginPage = () => {
     const [Cards, setCards] = useState(['']);
+    const [selectedImage, setSelectedImage] = useState(null);
 
     useEffect(() => {
         getCards()
@@ -82,18 +52,56 @@ const LoginPage = () => {
             setCards(extractedImages);
         }).catch(
             function (error){
-                alert("Não foi possivel carregar os flash cards!");
+                alert("Não foi possivel carregar os cards!");
                 console.log(error);
             }
         )
     }
 
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setSelectedImage(reader.result);
+        };
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+    };
+
     return (
         <StyledEngineProvider injectFirst>
-            <TextFieldStyled label="User" style={{marginTop: '8%'}}/>
-            <TextFieldStyled label="Password" type="password"/>
-            <ButtonStyled variant="contained">Sign In</ButtonStyled>
-            <RegisterLink/>
+            <div style={{textAlign: 'center'}}>
+                {selectedImage && (
+                    <div style={{display: 'inline-block', textAlign: 'center'}}>
+                        {selectedImage === 'camera' ? (
+                            <video
+                                autoPlay
+                                style={{width: '100%', maxWidth: '300px', maxHeight: '300px', marginTop: '20px'}}
+                            />
+                        ) : (
+                            <img
+                                src={selectedImage}
+                                alt="Uploaded"
+                                style={{maxWidth: '100%', maxHeight: '300px', marginTop: '20px'}}
+                            />
+                        )}
+                    </div>
+                )}
+                <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={handleImageUpload}
+                    style={{display: 'none'}}
+                    id="upload-image"
+                />
+                <label htmlFor="upload-image">
+                    <ButtonStyled variant="contained" htmlFor="upload-image" component="span">
+                        Upload Picture
+                    </ButtonStyled>
+                </label>
+            </div>
             {
                 Cards.map((card, index) => (
                     <Card key={index} image={card} index={index}/>
