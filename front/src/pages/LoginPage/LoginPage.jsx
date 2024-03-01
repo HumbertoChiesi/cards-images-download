@@ -4,8 +4,8 @@ import {
     StyledEngineProvider, TextField,
 } from "@mui/material";
 import PkmTcgService from "../../services/PkmTcgService";
-import Card from "./PkmCard";
-import ObjectDetection from "./ObjectDetection"
+import Card from "../../components/PkmCard";
+import ObjectDetection from "../../components/ObjectDetection"
 import {styled} from "@mui/system";
 import axios from 'axios';
 
