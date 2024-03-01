@@ -5,6 +5,7 @@ import {
 } from "@mui/material";
 import PkmTcgService from "../../services/PkmTcgService";
 import Card from "./PkmCard";
+import ObjectDetection from "./ObjectDetection"
 import {styled} from "@mui/system";
 import axios from 'axios';
 
@@ -86,36 +87,7 @@ const LoginPage = () => {
     return (
         <StyledEngineProvider injectFirst>
             <div style={{textAlign: 'center'}}>
-                {selectedImage && (
-                    <div style={{display: 'inline-block', textAlign: 'center'}}>
-                        {selectedImage === 'camera' ? (
-                            <video
-                                autoPlay
-                                style={{width: '100%', maxWidth: '300px', maxHeight: '300px', marginTop: '20px'}}
-                            />
-                        ) : (
-                            <img
-                                src={selectedImage}
-                                alt="Uploaded"
-                                style={{maxWidth: '100%', maxHeight: '300px', marginTop: '20px'}}
-                            />
-                        )}
-                    </div>
-                )}
-                <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={handleImageUpload}
-                    style={{display: 'none'}}
-                    id="upload-image"
-                />
-                <label htmlFor="upload-image">
-                    <ButtonStyled variant="contained" htmlFor="upload-image" component="span">
-                        Upload Picture
-                    </ButtonStyled>
-                </label>
-                {prediction && <p>Prediction: {prediction}</p>}
+                <ObjectDetection/>
             </div>
             {
                 Cards.map((card, index) => (
