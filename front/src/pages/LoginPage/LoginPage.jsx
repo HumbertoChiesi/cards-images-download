@@ -48,7 +48,6 @@ const LoginPage = () => {
                 page: randomPageNumber
             }
         }).then((response) => {
-            console.log(response.data)
             const extractedImages = response.data.data.map((card) => card.images.small);
             console.log(extractedImages.length)
             setCards(extractedImages);

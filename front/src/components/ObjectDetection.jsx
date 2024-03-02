@@ -1,114 +1,98 @@
-import React, {useState} from "react";
-import * as tf from '@tensorflow/tfjs';
-import {styled} from "@mui/system";
-import {Button} from "@mui/material";
+import * as ort from 'onnxruntime-web';
+import {useEffect, useRef, useState} from "react";
 
 
-const ButtonStyled = styled(Button)({
-    backgroundColor: '#666bc4',
-    color: '#c8d6c4',
-    display: 'block',
-    marginTop: '67px',
-    borderRadius:30,
-    width: 200,
-    height: 65,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-    '&:hover': {
-        backgroundColor: '#111abf',
-    },
-})
+const modelPath = process.env.PUBLIC_URL + "/best.onnx";
 
+const InferenceSession = ort.InferenceSession;
 const ObjectDetection = () => {
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [detectedObjects, setDetectedObjects] = useState([]);
+    const [session, setSession] = useState(null);
+    const canvasHTMLRef = useRef(null);
 
-    const loadModel = async () => {
-        return await tf.loadGraphModel('./src/model/best.onnx');
-    };
+    useEffect( () => {
+        async function get_session(){
+            setSession(await InferenceSession.create(modelPath));
+        }
+        get_session()
+    }, []);
 
-    // Function to postprocess the model output and extract detected objects
-    const postprocessOutput = (output) => {
-        // Example: Extract bounding boxes, labels, and scores from the output tensor
-        const boxes = output[0].arraySync(); // Example: Output tensor containing bounding box coordinates
-        const labels = output[1].arraySync(); // Example: Output tensor containing class labels
-        const scores = output[2].arraySync(); // Example: Output tensor containing confidence scores
+    async function handleImage(img) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 640; // Set the desired width
+        canvas.height = 640; // Set the desired height
+        const ctx = canvas.getContext('2d');
 
-        // Combine bounding boxes, labels, and scores into detected objects
-        return boxes.map((box, index) => ({
-            box,
-            label: labels[index],
-            score: scores[index]
-        }));
-    };
+        // Draw the image onto the canvas with the desired dimensions
+        ctx.drawImage(img, 0, 0, 640, 640);
+        const resizedImageDataUrl = canvas.toDataURL();
 
-    const handleImageUpload = async (event) => {
-        const file = event.target.files[0];
-        setSelectedImage(URL.createObjectURL(file)); // Display the uploaded image
+        // Convert the canvas content to a data URL
+        const htmlTensor = await ort.Tensor.fromImage(resizedImageDataUrl);
+        const imageHTML = htmlTensor.toImageData();
 
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const imgDataUrl = e.target.result;
-            const img = new Image();
-            img.onload = async () => {
-                const tensor = tf.browser.fromPixels(img);
-                const model = await loadModel();
+        const contextHTML = canvasHTMLRef.current.getContext('2d');
+        canvasHTMLRef.current.width = 640;
+        canvasHTMLRef.current.height = 640;
+        contextHTML.drawImage(img, 0, 0, 640, 640);
 
-                // Preprocess the input image if needed
-                // Example: const preprocessedImage = preprocessImage(tensor);
+        try {
+            const inputTensor = new ort.Tensor('float32', htmlTensor.data, [1, 3, imageHTML.height, imageHTML.width]);
+            const feeds = { "images": inputTensor };
+            const outputMap = await session.run(feeds);
+            drawBoundingBoxes(outputMap, ctx);
+        } catch (error) {
+            console.error('Error running inference:', error);
+        }
+    }
 
-                // Perform inference with the model
-                const output = await model.executeAsync(tensor);
+    function drawBoundingBoxes(outputMap, ctx) {
+        const output0 = outputMap.output0.data;
+        const cardCount = output0[0];
+        const scores = output0.slice(1, cardCount + 1);
+        const boxes = output0.slice(cardCount + 1);
 
-                // Postprocess the output to get detected objects
-                const detectedObjects = postprocessOutput(output);
+        for (let i = 0; i < cardCount; i++) {
+            const score = scores[i];
+            if (score > 0.5) { // Only draw bounding boxes for high-confidence detections
+                const boxOffset = i * 4;
+                const ymin = boxes[boxOffset] * 640;
+                const xmin = boxes[boxOffset + 1] * 640;
+                const ymax = boxes[boxOffset + 2] * 640;
+                const xmax = boxes[boxOffset + 3] * 640;
 
-                // Update state with detected objects
-                setDetectedObjects(detectedObjects);
+                ctx.beginPath();
+                ctx.strokeStyle = 'red';
+                ctx.lineWidth = 2;
+                ctx.rect(xmin, ymin, xmax - xmin, ymax - ymin);
+                ctx.stroke();
+            }
+        }
+    }
 
-                tensor.dispose(); // Dispose tensor to free up memory
-            };
-            img.src = imgDataUrl;
-        };
-        reader.readAsDataURL(file);
-    };
+    function loadImage(fileReader) {
+        const img = document.getElementById('original-image');
+        img.onload = () => handleImage(img);
+        img.src = fileReader.result;
+    }
+
+    function handleFileChange(evt) {
+        const files = evt.target.files;
+        if (FileReader && files && files.length) {
+            const fileReader = new FileReader();
+            fileReader.onload = () => loadImage(fileReader);
+            fileReader.readAsDataURL(files[0]);
+        }
+    }
 
     return (
         <div>
-            <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleImageUpload}
-                style={{display: 'none'}}
-                id="upload-image"
-            />
-            <label htmlFor="upload-image">
-                <ButtonStyled variant="contained" htmlFor="upload-image" component="span">
-                    Upload Picture
-                </ButtonStyled>
-            </label>
-            {selectedImage && (
-                <div style={{position: 'relative', display: 'inline-block'}}>
-                    <img src={selectedImage} alt="Uploaded"/>
-                    {detectedObjects.map((object, index) => (
-                        <div
-                            key={index}
-                            style={{
-                                position: 'absolute',
-                                border: '2px solid red',
-                                borderRadius: '3px',
-                                top: `${object.box[0]}px`,
-                                left: `${object.box[1]}px`,
-                                width: `${object.box[2] - object.box[0]}px`,
-                                height: `${object.box[3] - object.box[1]}px`
-                            }}
-                        >
-                            <p style={{ margin: 0, background: 'red', color: 'white' }}>{object.label}: {object.score}</p>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <h1>Example</h1>
+            <div>
+                <input title="Image from File" type="file" id="file-in" name="file-in" onChange={handleFileChange}/>
+                <img id="original-image" src="#" style={{display: 'none'}} alt="Original"/>
+            </div>
+            <h3>Image from tensor</h3>
+            <canvas id="canvasHTMLElement" ref={canvasHTMLRef}></canvas>
         </div>
     );
 };
