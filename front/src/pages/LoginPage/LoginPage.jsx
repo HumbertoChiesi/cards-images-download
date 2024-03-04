@@ -8,6 +8,7 @@ import Card from "../../components/PkmCard";
 import ObjectDetection from "../../components/ObjectDetection"
 import {styled} from "@mui/system";
 import axios from 'axios';
+import TestDetection from "../../components/TestDetection";
 
 const ButtonStyled = styled(Button)({
     backgroundColor: '#666bc4',
@@ -86,7 +87,7 @@ const LoginPage = () => {
     return (
         <StyledEngineProvider injectFirst>
             <div style={{textAlign: 'center'}}>
-                <ObjectDetection/>
+                <TestDetection></TestDetection>
             </div>
             {
                 Cards.map((card, index) => (

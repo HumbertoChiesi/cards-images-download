@@ -39,7 +39,10 @@ const ObjectDetection = () => {
             const inputTensor = new ort.Tensor('float32', htmlTensor.data, [1, 3, imageHTML.height, imageHTML.width]);
             const feeds = { "images": inputTensor };
             const outputMap = await session.run(feeds);
-            drawBoundingBoxes(outputMap, ctx);
+            console.log(outputMap)
+            console.log(outputMap["output0"].data.keys)
+            //contextHTML.drawImage(outputMap['output0'].toDataURL, 0, 0, 640, 640);
+            //drawBoundingBoxes(outputMap, ctx);
         } catch (error) {
             console.error('Error running inference:', error);
         }
