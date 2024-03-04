@@ -1,4 +1,4 @@
-# # Pokemon Cards Images Recognition
+# Pokemon Cards Images Recognition
 
 # Not finished yet
   🔨🚧🔨🚧🔨🚧🔨
