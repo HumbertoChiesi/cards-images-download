@@ -30,8 +30,8 @@ const TestDetection = () => {
         img.onload = () => {
             const canvas = document.querySelector("canvas");
             const aspectRatio = img.width / img.height;
-            const maxWidth = 400;
-            const maxHeight = 400;
+            const maxWidth = 640;
+            const maxHeight = 640;
             let newWidth = img.width;
             let newHeight = img.height;
 
@@ -216,7 +216,7 @@ const TestDetection = () => {
 
     return(
         <div>
-            <h1>TESTE</h1>
+            <h1>Test run model on browser</h1>
             <input id="uploadInput" type="file"/>
             <canvas></canvas>
         </div>
